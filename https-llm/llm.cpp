@@ -73,3 +73,32 @@ void LLM::onNetworkfinished(QNetworkReply *reply) {
     }   
     reply->deleteLater();
 }
+
+QUrl STT::getURL()
+{
+    QString url = "ws://spark-api.xf-yun.com/v4.0/chat";
+    QString host = "spark-api.xf-yun.com";
+    QDateTime dateTime; 
+    QString dateTime_str = dateTime.currentDateTime().toString("ddd, dd MMM yyyy HH:mm:ss 'GMT'");
+
+    QString signature_origin =  QString("host: ") + host + '\n'+
+                                QString("date: ") + dateTime_str + '\n'+
+                                QString("GET /v1.1/chat HTTP/1.1");
+    QByteArray message = signature_origin.toUtf8();
+    QByteArray key = APISecret.toUtf8();
+    QByteArray signature_byte = QMessageAuthenticationCode::hash(message,key,QCryptographicHash::Sha256).toBase64();
+    QString signature = QString(signature_byte);
+
+    QString authorization_origin = QString("api_key=\"%1\", algorithm=\"%2\", headers=\"%3\", signature=\"%4\"").arg(APIKey).arg("hmac-sha256").arg("host date request-line").arg(signature);
+    QByteArray authorization_byte = authorization_origin.toUtf8().toBase64();
+    QString authorization = QString(authorization_byte);
+
+    QUrl qurl(url);
+    QUrlQuery query;
+    query.addQueryItem("authorization",authorization);
+    query.addQueryItem("date",dateTime_str);
+    query.addQueryItem("host",host);
+    qurl.setQuery(query);
+
+    return qurl;
+}

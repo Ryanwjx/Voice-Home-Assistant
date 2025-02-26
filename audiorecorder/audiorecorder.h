@@ -22,6 +22,8 @@ public:
     AudioRecorder(QWidget *parent = nullptr);
     ~AudioRecorder();
 
+    void startRecorder(QString filename = "16k.wav");    
+    void stopRecorder(); 
 private:   
     /* 录音类 */
     QAudioRecorder *m_audioRecorder = nullptr;
@@ -38,20 +40,22 @@ private:
     QList<QVariant>qualityVar;
     QList<QVariant>bitratesVar;
 
-    /* 清空录音level */
-    void clearAudioLevels();
+    QString filename = "16k.wav";
 
-public slots:   
-    /* 开始录音槽函数 */
-    void startRecorder();   //--启动录音槽函数，与外部组件信号组合
+    qint64 g_nosie_time;
+    qint64 g_record_time;
+    qreal audio_noise_thred = 0.4;
+    qint64 nosie_time_thred = 20;
+    qreal unavaliable_record_thred = 0.9;
 
-    /* 停止录音槽函数 */
-    void stopRecorder();    //--结束录音槽函数，与外部组件信号组合
-
+private slots:   
     /* 更新录音时长 */
     void updateProgress(qint64);    //--录音时长槽函数
 
     /* 更新录音level */
     void processBuffer(const QAudioBuffer&);    //--录音音量等级槽函数
+
+signals:
+    void audioReadyData(QString);
 };
 #endif // AUDIORECORDER_H

@@ -8,23 +8,14 @@
 #include <QFile>
 #include <QTextStream>
 #include <QProcess>
+#include <QMessageAuthenticationCode>
+#include <QUrlQuery>
 
 #define STATUS_FIRST_FRAME 0
 #define STATUS_CONTINUE_FRAME 1
 #define STATUS_LAST_FRAME 2
 
-int  convertPCMtoWAV_ffmpeg(const QString &pcmFile, const QString &wavFile) {
-    QStringList args;
-    args << "-f" << "s16le"    // PCM 格式 (signed 16-bit little-endian)
-         << "-ar" << "16000"   // 采样率 16kHz
-         << "-ac" << "1"       // 单声道
-         << "-i" << pcmFile
-         << wavFile;
-
-    return QProcess::execute("ffmpeg", args);
-}
-
-TTS::TTS(QObject *parent):m_audioFile(pathstr), m_status(STATUS_FIRST_FRAME)
+TTS::TTS(QObject *parent):g_audioFile(pathstr)
 {
     this->setParent(parent);
 
@@ -36,9 +27,15 @@ TTS::TTS(QObject *parent):m_audioFile(pathstr), m_status(STATUS_FIRST_FRAME)
     webSocket->setSslConfiguration(config);
 
     connect(webSocket, SIGNAL(connected()), this, SLOT(webSocketConnected()));//-websokets连接成功，调用连接成功函数
+    connect(webSocket, SIGNAL(disconnected()), this, SLOT(webSocketDisconnected()));
     connect(webSocket, SIGNAL(textMessageReceived(QString)), this, SLOT(onTextMessageReceived(QString)));
 
+    APPID = "165f0835";
+    APIKey = "46f6142d03d1912a246dd9b696a17cbf";
+    APISecret = "ZGFlMzhmYjk2ZDczN2RkZWI4MjJlZGI5";
     // webSocket->sendTextMessage(cmd);
+
+    // startTTS("你好！");
 }
 
 TTS::~TTS()
@@ -49,29 +46,29 @@ TTS::~TTS()
 
 void TTS::startTTS(QString text)
 {   
-    ttstext.clear();
-    ttstext = text;
-    webSocket->open(QUrl(QString("wss://tts-api.xfyun.cn/v2/tts?authorization=YXBpX2tleT0iNDZmNjE0MmQwM2QxOTEyYTI0NmRkOWI2OTZhMTdjYmYiLCBhbGdvcml0aG09ImhtYWMtc2hhMjU2IiwgaGVhZGVycz0iaG9zdCBkYXRlIHJlcXVlc3QtbGluZSIsIHNpZ25hdHVyZT0iMThHampteFVQMjNvRE5mekRUSHN5Wk5XQlA5T1FSMzhNT0IyaURzT1FHZz0i&date=Sun%2C+09+Feb+2025+07%3A12%3A24+GMT&host=ws-api.xfyun.cn")));  //开始连接服务器
+    g_ttstext = text;   //初始化 设置输入
+    QUrl qurl = getURL();
+    webSocket->open(qurl);  //开始连接服务器
+}
+
+void TTS::abandonTTS()
+{
+    webSocket->close(); 
 }
 
 void TTS::webSocketConnected()
 {
     qDebug() << "tts WebSocket connected!";
 
-    QFile file1(pathstr);
-    file1.remove();
-    file1.close();
+    g_audioFile.open(QIODevice::Append);    //初始化 打开文件
+    g_audioFile.resize(0);
 
-    QFile file2(wavpathstr);
-    file2.remove();
-    file2.close();
-
-    qDebug() << ttstext;
+    qDebug() << g_ttstext;
     // 组织 JSON 数据
     QJsonObject json;
 
     QJsonObject common;
-    common["app_id"] = "165f0835";
+    common["app_id"] = APPID;
 
     QJsonObject business;
     business["aue"] = "raw";
@@ -80,7 +77,7 @@ void TTS::webSocketConnected()
     business["tte"] = "utf8";
 
     // 进行 Base64 编码
-    QByteArray buf = ttstext.toLocal8Bit();
+    QByteArray buf = g_ttstext.toLocal8Bit();
     // QByteArray buf("这是语音");
     QString encodedAudio = QString::fromUtf8(buf.toBase64());
     QJsonObject data;
@@ -95,12 +92,12 @@ void TTS::webSocketConnected()
     QJsonDocument jsonDoc(json);
     QString jsonString = QString::fromUtf8(jsonDoc.toJson(QJsonDocument::Compact));
     webSocket->sendTextMessage(jsonString);
+}
 
-    // // 最后一帧，关闭连接
-    // if (m_status == STATUS_LAST_FRAME) {
-    //     QThread::sleep(1);
-    //     webSocket->close();
-    // }
+void TTS::webSocketDisconnected()
+{
+    qDebug() << "LLM WebSocket disconnected!";
+    g_audioFile.close();  //清理 关闭文件
 }
 
 void TTS::onTextMessageReceived(const QString &message)
@@ -131,34 +128,43 @@ void TTS::onTextMessageReceived(const QString &message)
     QByteArray audioData = QByteArray::fromBase64(audioBase64.toUtf8());
 
     // 将音频数据追加写入文件
-    QFile file(pathstr);
-    if (file.open(QIODevice::Append)) {
-        file.write(audioData);
-        file.close();
-    } else {
-        qDebug() << "Failed to open demo.pcm for writing!";
-        return;
-    }
+    g_audioFile.write(audioData);
 
-    // // 处理 WebSocket 关闭逻辑
-    // if (status == 2) {
-    //     qDebug() << "WebSocket is closing...";
-    //     webSocket->close();
-    // }
-
-    if(status == 2)
+    if(status == STATUS_LAST_FRAME)
     {
-        qDebug() << "语音获取成功";
-        int exitCode = convertPCMtoWAV_ffmpeg(pathstr, wavpathstr);
-        if(exitCode == -2 || exitCode == -1)
-        {
-            qDebug() << "PCM 转 WAV 失败!";
-            return;
-        }
-        qDebug() << "PCM 转 WAV 完成!";
-        emit ttsReadyData(wavpathstr); 
-
+        qDebug() << "PCM语音获取成功";
+        emit ttsReadyData(pathstr);  
         webSocket->close(); 
     }
     
+}
+
+QUrl TTS::getURL()
+{
+    QString url = "ws://tts-api.xfyun.cn/v2/tts";
+    QString host = "ws-api.xfyun.cn";
+    QDateTime dateTime; 
+    QString dateTime_str = dateTime.currentDateTime().toString("ddd, dd MMM yyyy HH:mm:ss 'GMT'");
+
+    QString signature_origin =  QString("host: ") + host + '\n'+
+                                QString("date: ") + dateTime_str + '\n'+
+                                QString("GET /v2/tts HTTP/1.1");
+    QByteArray message = signature_origin.toUtf8();
+    QByteArray key = APISecret.toUtf8();
+    QByteArray signature_byte = QMessageAuthenticationCode::hash(message,key,QCryptographicHash::Sha256).toBase64();
+    QString signature = QString(signature_byte);
+
+    QString authorization_origin = QString("api_key=\"%1\", algorithm=\"%2\", headers=\"%3\", signature=\"%4\"").arg(APIKey).arg("hmac-sha256").arg("host date request-line").arg(signature);
+    QByteArray authorization_byte = authorization_origin.toUtf8().toBase64();
+    QString authorization = QString(authorization_byte);
+
+    QUrl qurl(url);
+    QUrlQuery query;
+    query.addQueryItem("authorization",authorization);
+    query.addQueryItem("date",dateTime_str);
+    query.addQueryItem("host",host);
+    qurl.setQuery(query);
+
+    qDebug() <<qurl.toString().toStdString().data();
+    return qurl;
 }

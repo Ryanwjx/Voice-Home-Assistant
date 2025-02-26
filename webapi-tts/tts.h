@@ -17,27 +17,26 @@ public:
     ~TTS();
 
     void startTTS(QString text);
-
+    void abandonTTS();
 private:
-    /* 返回的字符串信息 */
-    QString dataString;
-
     // WebSocket
     QWebSocket *webSocket;
-
+private:
     QString pathstr = "./demo.pcm";
-    QString wavpathstr = "./output.wav";
 
-    QFile m_audioFile;
-    QTimer m_timer;
+    QFile g_audioFile;
+    QString g_ttstext;
 
-    QString ttstext;
+    QString APPID;
+    QString APIKey;
+    QString APISecret;
 
-    int m_status;
+    QUrl getURL();
 private slots:
 
     // WebSocket
     void webSocketConnected();
+    void webSocketDisconnected();
     void onTextMessageReceived(const QString &message);
 
 signals:

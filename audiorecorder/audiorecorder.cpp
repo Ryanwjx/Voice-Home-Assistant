@@ -23,7 +23,6 @@ static QVector<qreal> getBufferLevels(const T *buffer, int frames, int channels)
 AudioRecorder::AudioRecorder(QWidget *parent)
 {
     Q_UNUSED(parent);
-
     /* 录制音频的类 */
     m_audioRecorder = new QAudioRecorder(this);
 
@@ -68,7 +67,6 @@ AudioRecorder::AudioRecorder(QWidget *parent)
         //qDebug()<<"采样率："<<sampleRate<<endl;
     }
 
-
     /* 通道 */
     channelsVar.append(QVariant(-1));
     channelsVar.append(QVariant(1));
@@ -90,14 +88,21 @@ AudioRecorder::AudioRecorder(QWidget *parent)
     /* 录音类信号槽连接 */
     connect(m_audioRecorder, &QAudioRecorder::durationChanged,  //-m_audioRecorder在录制持续时间变化时发射，以更新界面上的时间显示
             this, &AudioRecorder::updateProgress);
+
+    // startRecorder();
 }
 
 AudioRecorder::~AudioRecorder()
 {
+    // stopRecorder();
+
+    delete m_audioRecorder;
+    m_audioRecorder = nullptr;
+    delete m_probe;
+    m_probe = nullptr;
 }
 
-
-void AudioRecorder::startRecorder()
+void AudioRecorder::startRecorder(QString filename)
 {
     /* 备注：录音需要设置成16000 采样率和通道数为1，
      * 保存为wav文件需要设置成audio/x-wav（container文件格式） */
@@ -127,36 +132,23 @@ void AudioRecorder::startRecorder()
                                              QVideoEncoderSettings(),
                                              container);
         /* 录音保存为16k.wav文件 */
-        m_audioRecorder->setOutputLocation(QUrl::fromLocalFile(tr("./16k.wav")));
+        m_audioRecorder->setOutputLocation(QUrl::fromLocalFile(filename));
+
+        g_nosie_time = 0;
+        g_record_time = 0;
 
         /* 开始录音 */
         m_audioRecorder->record();
+        qDebug() << "开始录音";
     }
 }
 
 void AudioRecorder::stopRecorder()
 {
     /* 停止录音 */
+    qDebug() << "停止录音1";
     m_audioRecorder->stop();
-}
-
-
-void AudioRecorder::updateProgress(qint64 duration)
-{
-    Q_UNUSED(duration);
-
-    if (m_audioRecorder->error()
-            != QMediaRecorder::NoError)
-        return;
-
-    /* 打印录制时长 */
-    qDebug()<<duration / 1000<<endl;
-}
-
-
-void AudioRecorder::clearAudioLevels()
-{
-    //...
+    qDebug() << "停止录音2";
 }
 
 // This function returns the maximum possible sample value for a given audio format
@@ -271,7 +263,7 @@ void AudioRecorder::processBuffer(const QAudioBuffer& buffer)
     int count = buffer.format().channelCount();
     /* 打印通道数 */
     Q_UNUSED(count);
-    // qDebug()<<"通道数"<<count<<endl;
+    qDebug()<<"通道数"<<count<<endl;
 
     /* 设置level的值 */
     QVector<qreal> levels = getBufferLevels(buffer);
@@ -279,4 +271,33 @@ void AudioRecorder::processBuffer(const QAudioBuffer& buffer)
         /* 打印音量等级 */
         qDebug()<<"音量等级"<<levels.at(i)<<endl;
     }
+    
+    g_record_time++;
+
+    // 自动结束 + 滤除无效声音
+    qreal average_level = std::accumulate(levels.begin(), levels.end(), 0.0) / levels.size();
+    if (average_level < audio_noise_thred)
+        g_nosie_time++;
+    if (g_nosie_time > nosie_time_thred)
+    {   
+        qDebug() << "停止录音1";
+        m_audioRecorder->stop();
+        qDebug() << "停止录音2";
+        if (qreal(g_nosie_time) / qreal(g_record_time) > unavaliable_record_thred)
+            emit audioReadyData(nullptr);  //结束
+        else
+            emit audioReadyData(filename);
+    }    
+}
+
+void AudioRecorder::updateProgress(qint64 duration)
+{
+    Q_UNUSED(duration);
+
+    if (m_audioRecorder->error()
+            != QMediaRecorder::NoError)
+        return;
+
+    /* 打印录制时长 */
+    qDebug()<<"duration:" <<duration / 1000<<endl;
 }

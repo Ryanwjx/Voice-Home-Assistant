@@ -33,4 +33,4 @@ RESOURCES += \
 include(../audiorecorder/audiorecorder.pri)
 include(../webapi-stt/stt.pri)
 include(../webapi-tts/tts.pri)
-include(../https-llm/llm.pri)
+include(../webapi-llm/llm.pri)

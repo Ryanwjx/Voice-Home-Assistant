@@ -17,33 +17,33 @@ public:
     ~STT();
 
     void startstt(QString fileName);
-
-private:
-
-    QString fullText;
-    
-    QTimer *timer;
-
-    /* 返回的字符串信息 */
-    QString dataString;
-
+    void abandonstt();
+private:    
     // WebSocket
     QWebSocket *webSocket;
 
-    // QString pathstr = "/mnt/linux_app/llm/iat_pcm_8k.pcm";
-    QFile m_audioFile;
-    QTimer m_timer;
-    int m_status;
-private slots:
+    //timer
+    QTimer *timer;
+private:
+    QString g_audioFileName;
+    QFile g_audioFile;
+    QString g_FullText;
+    int g_status;
 
+    QString APPID;
+    QString APIKey;
+    QString APISecret;
+
+    QUrl getURL();
+
+private slots:
     // WebSocket
     void webSocketConnected();
-    void sendAudioFrame();
-
+    void webSocketDisconnected();
     void onTextMessageReceived(const QString &message);
-    void onBinaryMessageReceived(const QByteArray &message);
-public:
-    void whichDeviceNameSendCmd(QString name, QString message);
+
+    //timer
+    void sendAudioFrame();
 
 signals:
     void sttReadyData(QString);

@@ -13,14 +13,56 @@ Copyright © Deng Zhimao Co., Ltd. 1990-2021. All rights reserved.
 #include <unistd.h>
 #include <QProcess>
 
-int  aplay_playwav(const QString &wavFile) {
-    QStringList args;
-    args << wavFile;
-    return QProcess::execute("aplay", args);
-}
+#include <QAudioFormat>
+#include <QAudioOutput>
+#include <QApplication>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
+{
+    setup();
+
+    /* 自定义的录音类 */
+    myAudioRecorder = new AudioRecorder(this);
+    connect(myAudioRecorder, SIGNAL(audioReadyData(QString)), this, SLOT(onaudioReadyData(QString)));
+
+    /* 定时器类，控制运行流 */
+    time = new QTimer(this);
+
+    connect(time, SIGNAL(timeout()), this, SLOT(ontimeTimeOut())); 
+
+    /* 自定义的百度云识别录音类 */
+    mytts = new TTS(this);
+    mystt = new STT(this);
+    myllm = new LLM(this);
+
+    connect(mystt, SIGNAL(sttReadyData(QString)), this, SLOT(onsttReadyData(QString))); //根据stt发送的信号，进行结果显示
+    connect(myllm, SIGNAL(LLMReadyData(QString)), this, SLOT(onllmReadyData(QString))); //根据llm发送的信号，进行结果显示
+    connect(mytts, SIGNAL(ttsReadyData(QString)), this, SLOT(onttsReadyData(QString))); //根据llm发送的信号，进行结果显示
+
+    /* 播放 */
+    QAudioFormat fmt;
+    fmt.setSampleRate(16000);   // 设置采样率
+    fmt.setSampleSize(16);      // 设置样本大小
+    fmt.setChannelCount(1);     // 设置使用双通道
+    fmt.setCodec("audio/pcm");  // 设置编解码器
+    fmt.setByteOrder(QAudioFormat::LittleEndian);   // 使用小端
+    fmt.setSampleType(QAudioFormat::SignedInt); 
+    QAudioDeviceInfo info(QAudioDeviceInfo::defaultOutputDevice());
+    if (!info.isFormatSupported(fmt)) {
+        qWarning() << "Raw audio format not supported by backend, cannot play audio.";
+    }
+    audio = new QAudioOutput(fmt, this);
+    connect(audio, SIGNAL(stateChanged(QAudio::State)), this, SLOT(audiohandleStateChanged(QAudio::State)));
+
+    // onttsReadyData("./demo.pcm");
+}
+
+MainWindow::~MainWindow()
+{
+}
+
+void MainWindow::setup()
 {
     this->setGeometry(0, 0, 800, 480);
     this->setStyleSheet("background:#14161a");
@@ -64,94 +106,63 @@ MainWindow::MainWindow(QWidget *parent)
     myMovie->jumpToNextFrame();
 
     movieLabel->setAlignment(Qt::AlignHCenter);
-
-    timer1 = new QTimer(this);
-    timer2 = new QTimer(this);
-    timer3 = new QTimer(this);
-
-    connect(timer1, SIGNAL(timeout()), this, SLOT(onTimer1TimeOut()));  //请求转换，启动time3
-    connect(timer2, SIGNAL(timeout()), this, SLOT(onTimer2TimeOut()));  //记录声音，启动Time1
-    connect(timer3, SIGNAL(timeout()), this, SLOT(onTimer3TimeOut()));  //恢复
-
-    /* 自定义的录音类 */
-    myAudioRecorder = new AudioRecorder(this);
-
-    /* 自定义的百度云识别录音类 */
-    // myAsr = new Asr(this);
-    mytts = new TTS(this);
-    mystt = new STT(this);
-
-    myllm = new LLM(this);
-
-
-
-    mediaplayer = new QMediaPlayer(this);
-
-    // connect(myAsr, SIGNAL(asrReadyData(QString)), this, SLOT(onAsrReadyData(QString))); //根据asr发送的信号，进行结果显示
-    connect(mystt, SIGNAL(sttReadyData(QString)), this, SLOT(onsttReadyData(QString))); //根据stt发送的信号，进行结果显示
-    connect(myllm, SIGNAL(llmReadyData(QString)), this, SLOT(onllmReadyData(QString))); //根据llm发送的信号，进行结果显示
-    connect(mytts, SIGNAL(ttsReadyData(QString)), this, SLOT(onttsReadyData(QString))); //根据llm发送的信号，进行结果显示
-}
-
-MainWindow::~MainWindow()
-{
 }
 
 bool MainWindow::eventFilter(QObject *watched, QEvent *event){
 
     if (watched == movieLabel && event->type() == QEvent::MouseButtonPress) {
-        QSound::play(":/audio/sound.wav");
+        // QSound::play(":/audio/sound.wav");
         if (myMovie->state() != QMovie::Running) {
+            /* 可能stt llm tts正在运行 */
+            //stt 和 llm 获取了回答
+            //tts 播放
+            mystt->abandonstt();
+            myllm->abandonLLM();
+            mytts->abandonTTS();
+            if(audio->state() != QAudio::IdleState)
+            {
+                audio->stop();
+            }
+
             /* 等待QSound播放完,1.5s后再录音 */
-            timer2->start(1500);
+            time->start(1);
             textLabel->setText("正在听您说话，请继续...");
             myMovie->start();
+        }
+        else
+        {
+            myMovie->stop();
+            myAudioRecorder->stopRecorder();
+            textLabel->setText("请点击，开始说话...");
         }
     }
 
     return QWidget::eventFilter(watched, event);
 }
 
-void MainWindow::onTimer1TimeOut()
+void MainWindow::ontimeTimeOut()
 {
-    /* 停止录音，8s钟的短语音 */
-    myAudioRecorder->stopRecorder();
-    textLabel->setText("正在识别，请稍候...");
-    timer1->stop();
-    myMovie->stop();
-    QString fileName = QCoreApplication::applicationDirPath() + "/16k.wav";
-    // myAsr->getTheResult(fileName);
+    /* 开始录音 */
+    myAudioRecorder->startRecorder();
+    time->stop();
+}
 
+void MainWindow::onaudioReadyData(QString filename)
+{
+    myMovie->stop();
+    if(filename == nullptr)
+    {
+        textLabel->setText("请点击，开始说话...");
+        return;
+    }
+    /* 停止录音，8s钟的短语音 */
+    textLabel->setText("正在识别，请稍候...");
+    
+    QString fileName = QCoreApplication::applicationDirPath() + "/16k.wav";
 
     mystt->startstt(fileName);
     // myllm->sendMessage(textdata);
-    timer3->start(30000);
 }
-
-void MainWindow::onTimer2TimeOut()
-{
-    timer1->start(3000);
-    /* 开始录音 */
-    myAudioRecorder->startRecorder();
-    timer2->stop();
-}
-
-void MainWindow::onTimer3TimeOut()
-{
-    textLabel->setText("请点击，开始说话...");
-    timer3->stop();
-}
-
-// void MainWindow::onAsrReadyData(QString str)
-// {
-//     if (str.contains("开灯"))
-//         myLed->setLedState(true);
-//     else if (str.contains("关灯"))
-//         myLed->setLedState(false);
-
-//     textLabel->setText("识别结果是:\n" + str);
-//     textLabel->adjustSize();
-// }
 
 void MainWindow::onsttReadyData(QString str)
 {
@@ -160,10 +171,10 @@ void MainWindow::onsttReadyData(QString str)
     // else if (str.contains("关灯"))
     //     myLed->setLedState(false);
 
-    textLabel->setText("识别结果是:\n" + str);
+    textLabel->setText("STT识别结果是:\n" + str);
     textLabel->adjustSize();
 
-    myllm->sendMessage(str);
+    myllm->startLLM(str);
 }
 
 void MainWindow::onllmReadyData(QString str)
@@ -181,12 +192,28 @@ void MainWindow::onttsReadyData(QString filepath)
         return;
     }
 
-    // mediaplayer->setMedia(QUrl::fromLocalFile(filepath));
-    // mediaplayer->setVolume(100); 
-    // mediaplayer->play();
+    g_sourceFile.setFileName(filepath); 
+    g_sourceFile.open(QIODevice::ReadOnly);
+    audio->start(&g_sourceFile);
+}
 
-    aplay_playwav(filepath);
-
-    // QString path = "./16k.wav";
-    // mystt->startstt(path);
+void MainWindow::audiohandleStateChanged(QAudio::State newState)
+{
+    switch (newState) {
+        case QAudio::IdleState:
+            audio->stop();
+            qDebug() << "audio over";
+            textLabel->setText("请点击，开始说话...");
+            break;
+        
+        case QAudio::StoppedState:
+            // Stopped for other reasons
+            if (audio->error() == QAudio::NoError) {
+                g_sourceFile.close();
+                qDebug() << "audio stop";
+            }
+            break;
+        default:
+            break;
+    }
 }

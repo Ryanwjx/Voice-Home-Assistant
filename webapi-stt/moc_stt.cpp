@@ -21,8 +21,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_STT_t {
-    QByteArrayData data[12];
-    char stringdata0[144];
+    QByteArrayData data[8];
+    char stringdata0[104];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -32,24 +32,18 @@ struct qt_meta_stringdata_STT_t {
 static const qt_meta_stringdata_STT_t qt_meta_stringdata_STT = {
     {
 QT_MOC_LITERAL(0, 0, 3), // "STT"
-QT_MOC_LITERAL(1, 4, 10), // "requestllm"
-QT_MOC_LITERAL(2, 15, 0), // ""
-QT_MOC_LITERAL(3, 16, 8), // "QString&"
-QT_MOC_LITERAL(4, 25, 7), // "message"
-QT_MOC_LITERAL(5, 33, 12), // "sttReadyData"
-QT_MOC_LITERAL(6, 46, 18), // "webSocketConnected"
-QT_MOC_LITERAL(7, 65, 14), // "sendAudioFrame"
-QT_MOC_LITERAL(8, 80, 21), // "onTextMessageReceived"
-QT_MOC_LITERAL(9, 102, 23), // "onBinaryMessageReceived"
-QT_MOC_LITERAL(10, 126, 8), // "startstt"
-QT_MOC_LITERAL(11, 135, 8) // "fileName"
+QT_MOC_LITERAL(1, 4, 12), // "sttReadyData"
+QT_MOC_LITERAL(2, 17, 0), // ""
+QT_MOC_LITERAL(3, 18, 18), // "webSocketConnected"
+QT_MOC_LITERAL(4, 37, 21), // "webSocketDisconnected"
+QT_MOC_LITERAL(5, 59, 21), // "onTextMessageReceived"
+QT_MOC_LITERAL(6, 81, 7), // "message"
+QT_MOC_LITERAL(7, 89, 14) // "sendAudioFrame"
 
     },
-    "STT\0requestllm\0\0QString&\0message\0"
-    "sttReadyData\0webSocketConnected\0"
-    "sendAudioFrame\0onTextMessageReceived\0"
-    "onBinaryMessageReceived\0startstt\0"
-    "fileName"
+    "STT\0sttReadyData\0\0webSocketConnected\0"
+    "webSocketDisconnected\0onTextMessageReceived\0"
+    "message\0sendAudioFrame"
 };
 #undef QT_MOC_LITERAL
 
@@ -59,34 +53,30 @@ static const uint qt_meta_data_STT[] = {
        8,       // revision
        0,       // classname
        0,    0, // classinfo
-       7,   14, // methods
+       5,   14, // methods
        0,    0, // properties
        0,    0, // enums/sets
        0,    0, // constructors
        0,       // flags
-       2,       // signalCount
+       1,       // signalCount
 
  // signals: name, argc, parameters, tag, flags
-       1,    1,   49,    2, 0x06 /* Public */,
-       5,    1,   52,    2, 0x06 /* Public */,
+       1,    1,   39,    2, 0x06 /* Public */,
 
  // slots: name, argc, parameters, tag, flags
-       6,    0,   55,    2, 0x08 /* Private */,
-       7,    0,   56,    2, 0x08 /* Private */,
-       8,    1,   57,    2, 0x08 /* Private */,
-       9,    1,   60,    2, 0x08 /* Private */,
-      10,    1,   63,    2, 0x08 /* Private */,
+       3,    0,   42,    2, 0x08 /* Private */,
+       4,    0,   43,    2, 0x08 /* Private */,
+       5,    1,   44,    2, 0x08 /* Private */,
+       7,    0,   47,    2, 0x08 /* Private */,
 
  // signals: parameters
-    QMetaType::Void, 0x80000000 | 3,    4,
     QMetaType::Void, QMetaType::QString,    2,
 
  // slots: parameters
     QMetaType::Void,
     QMetaType::Void,
-    QMetaType::Void, QMetaType::QString,    4,
-    QMetaType::Void, QMetaType::QByteArray,    4,
-    QMetaType::Void, QMetaType::QString,   11,
+    QMetaType::Void, QMetaType::QString,    6,
+    QMetaType::Void,
 
        0        // eod
 };
@@ -97,28 +87,19 @@ void STT::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **
         auto *_t = static_cast<STT *>(_o);
         Q_UNUSED(_t)
         switch (_id) {
-        case 0: _t->requestllm((*reinterpret_cast< QString(*)>(_a[1]))); break;
-        case 1: _t->sttReadyData((*reinterpret_cast< QString(*)>(_a[1]))); break;
-        case 2: _t->webSocketConnected(); break;
-        case 3: _t->sendAudioFrame(); break;
-        case 4: _t->onTextMessageReceived((*reinterpret_cast< const QString(*)>(_a[1]))); break;
-        case 5: _t->onBinaryMessageReceived((*reinterpret_cast< const QByteArray(*)>(_a[1]))); break;
-        case 6: _t->startstt((*reinterpret_cast< QString(*)>(_a[1]))); break;
+        case 0: _t->sttReadyData((*reinterpret_cast< QString(*)>(_a[1]))); break;
+        case 1: _t->webSocketConnected(); break;
+        case 2: _t->webSocketDisconnected(); break;
+        case 3: _t->onTextMessageReceived((*reinterpret_cast< const QString(*)>(_a[1]))); break;
+        case 4: _t->sendAudioFrame(); break;
         default: ;
         }
     } else if (_c == QMetaObject::IndexOfMethod) {
         int *result = reinterpret_cast<int *>(_a[0]);
         {
-            using _t = void (STT::*)(QString & );
-            if (*reinterpret_cast<_t *>(_a[1]) == static_cast<_t>(&STT::requestllm)) {
-                *result = 0;
-                return;
-            }
-        }
-        {
             using _t = void (STT::*)(QString );
             if (*reinterpret_cast<_t *>(_a[1]) == static_cast<_t>(&STT::sttReadyData)) {
-                *result = 1;
+                *result = 0;
                 return;
             }
         }
@@ -154,29 +135,22 @@ int STT::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
     if (_id < 0)
         return _id;
     if (_c == QMetaObject::InvokeMetaMethod) {
-        if (_id < 7)
+        if (_id < 5)
             qt_static_metacall(this, _c, _id, _a);
-        _id -= 7;
+        _id -= 5;
     } else if (_c == QMetaObject::RegisterMethodArgumentMetaType) {
-        if (_id < 7)
+        if (_id < 5)
             *reinterpret_cast<int*>(_a[0]) = -1;
-        _id -= 7;
+        _id -= 5;
     }
     return _id;
 }
 
 // SIGNAL 0
-void STT::requestllm(QString & _t1)
-{
-    void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
-    QMetaObject::activate(this, &staticMetaObject, 0, _a);
-}
-
-// SIGNAL 1
 void STT::sttReadyData(QString _t1)
 {
     void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
-    QMetaObject::activate(this, &staticMetaObject, 1, _a);
+    QMetaObject::activate(this, &staticMetaObject, 0, _a);
 }
 QT_WARNING_POP
 QT_END_MOC_NAMESPACE

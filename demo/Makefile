@@ -57,7 +57,7 @@ SOURCES       = main.cpp \
 		../audiorecorder/audiorecorder.cpp \
 		../webapi-stt/stt.cpp \
 		../webapi-tts/tts.cpp \
-		../https-llm/llm.cpp qrc_res.cpp \
+		../webapi-llm/llm.cpp qrc_res.cpp \
 		moc_mainwindow.cpp \
 		moc_audiorecorder.cpp \
 		moc_stt.cpp \
@@ -240,7 +240,7 @@ DIST          = /opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linu
 		../audiorecorder/audiorecorder.pri \
 		../webapi-stt/stt.pri \
 		../webapi-tts/tts.pri \
-		../https-llm/llm.pri \
+		../webapi-llm/llm.pri \
 		/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/lib/mkspecs/features/resolve_config.prf \
 		/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/lib/mkspecs/features/default_post.prf \
 		/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/lib/mkspecs/features/warn_on.prf \
@@ -260,12 +260,12 @@ DIST          = /opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linu
 		../audiorecorder/audiorecorder.h \
 		../webapi-stt/stt.h \
 		../webapi-tts/tts.h \
-		../https-llm/llm.h main.cpp \
+		../webapi-llm/llm.h main.cpp \
 		mainwindow.cpp \
 		../audiorecorder/audiorecorder.cpp \
 		../webapi-stt/stt.cpp \
 		../webapi-tts/tts.cpp \
-		../https-llm/llm.cpp
+		../webapi-llm/llm.cpp
 QMAKE_TARGET  = demo
 DESTDIR       = 
 TARGET        = demo
@@ -442,7 +442,7 @@ Makefile: demo.pro /opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-l
 		../audiorecorder/audiorecorder.pri \
 		../webapi-stt/stt.pri \
 		../webapi-tts/tts.pri \
-		../https-llm/llm.pri \
+		../webapi-llm/llm.pri \
 		/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/lib/mkspecs/features/resolve_config.prf \
 		/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/lib/mkspecs/features/default_post.prf \
 		/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/lib/mkspecs/features/warn_on.prf \
@@ -626,7 +626,7 @@ Makefile: demo.pro /opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-l
 ../audiorecorder/audiorecorder.pri:
 ../webapi-stt/stt.pri:
 ../webapi-tts/tts.pri:
-../https-llm/llm.pri:
+../webapi-llm/llm.pri:
 /opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/lib/mkspecs/features/resolve_config.prf:
 /opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/lib/mkspecs/features/default_post.prf:
 /opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/lib/mkspecs/features/warn_on.prf:
@@ -660,8 +660,8 @@ distdir: FORCE
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
 	$(COPY_FILE) --parents res.qrc $(DISTDIR)/
 	$(COPY_FILE) --parents /opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/lib/mkspecs/features/data/dummy.cpp $(DISTDIR)/
-	$(COPY_FILE) --parents mainwindow.h ../audiorecorder/audiorecorder.h ../webapi-stt/stt.h ../webapi-tts/tts.h ../https-llm/llm.h $(DISTDIR)/
-	$(COPY_FILE) --parents main.cpp mainwindow.cpp ../audiorecorder/audiorecorder.cpp ../webapi-stt/stt.cpp ../webapi-tts/tts.cpp ../https-llm/llm.cpp $(DISTDIR)/
+	$(COPY_FILE) --parents mainwindow.h ../audiorecorder/audiorecorder.h ../webapi-stt/stt.h ../webapi-tts/tts.h ../webapi-llm/llm.h $(DISTDIR)/
+	$(COPY_FILE) --parents main.cpp mainwindow.cpp ../audiorecorder/audiorecorder.cpp ../webapi-stt/stt.cpp ../webapi-tts/tts.cpp ../webapi-llm/llm.cpp $(DISTDIR)/
 
 
 clean: compiler_clean 
@@ -727,10 +727,10 @@ moc_tts.cpp: ../webapi-tts/tts.h \
 		/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/x86_64-pokysdk-linux/usr/bin/moc
 	/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/x86_64-pokysdk-linux/usr/bin/moc $(DEFINES) --include /home/book/Qt/04/Voice-LLM-Assistant/demo/moc_predefs.h -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/lib/mkspecs/linux-oe-g++ -I/home/book/Qt/04/Voice-LLM-Assistant/demo -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/include/QtMultimedia -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/include/QtWidgets -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/include/QtGui -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/include/QtWebSockets -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/include/QtNetwork -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/include/QtCore -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/include/c++/5.3.0 -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/include/c++/5.3.0/arm-poky-linux-gnueabi -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/include/c++/5.3.0/backward -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/x86_64-pokysdk-linux/usr/lib/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/5.3.0/include -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/x86_64-pokysdk-linux/usr/lib/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/5.3.0/include-fixed -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/include ../webapi-tts/tts.h -o moc_tts.cpp
 
-moc_llm.cpp: ../https-llm/llm.h \
+moc_llm.cpp: ../webapi-llm/llm.h \
 		moc_predefs.h \
 		/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/x86_64-pokysdk-linux/usr/bin/moc
-	/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/x86_64-pokysdk-linux/usr/bin/moc $(DEFINES) --include /home/book/Qt/04/Voice-LLM-Assistant/demo/moc_predefs.h -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/lib/mkspecs/linux-oe-g++ -I/home/book/Qt/04/Voice-LLM-Assistant/demo -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/include/QtMultimedia -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/include/QtWidgets -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/include/QtGui -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/include/QtWebSockets -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/include/QtNetwork -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/include/QtCore -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/include/c++/5.3.0 -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/include/c++/5.3.0/arm-poky-linux-gnueabi -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/include/c++/5.3.0/backward -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/x86_64-pokysdk-linux/usr/lib/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/5.3.0/include -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/x86_64-pokysdk-linux/usr/lib/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/5.3.0/include-fixed -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/include ../https-llm/llm.h -o moc_llm.cpp
+	/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/x86_64-pokysdk-linux/usr/bin/moc $(DEFINES) --include /home/book/Qt/04/Voice-LLM-Assistant/demo/moc_predefs.h -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/lib/mkspecs/linux-oe-g++ -I/home/book/Qt/04/Voice-LLM-Assistant/demo -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/include/QtMultimedia -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/include/QtWidgets -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/include/QtGui -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/include/QtWebSockets -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/include/QtNetwork -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/include/QtCore -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/include/c++/5.3.0 -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/include/c++/5.3.0/arm-poky-linux-gnueabi -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/include/c++/5.3.0/backward -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/x86_64-pokysdk-linux/usr/lib/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/5.3.0/include -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/x86_64-pokysdk-linux/usr/lib/arm-poky-linux-gnueabi/gcc/arm-poky-linux-gnueabi/5.3.0/include-fixed -I/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/include ../webapi-llm/llm.h -o moc_llm.cpp
 
 compiler_moc_objc_header_make_all:
 compiler_moc_objc_header_clean:
@@ -771,8 +771,8 @@ stt.o: ../webapi-stt/stt.cpp ../webapi-stt/stt.h
 tts.o: ../webapi-tts/tts.cpp ../webapi-tts/tts.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o tts.o ../webapi-tts/tts.cpp
 
-llm.o: ../https-llm/llm.cpp ../https-llm/llm.h
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o llm.o ../https-llm/llm.cpp
+llm.o: ../webapi-llm/llm.cpp ../webapi-llm/llm.h
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o llm.o ../webapi-llm/llm.cpp
 
 qrc_res.o: qrc_res.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o qrc_res.o qrc_res.cpp

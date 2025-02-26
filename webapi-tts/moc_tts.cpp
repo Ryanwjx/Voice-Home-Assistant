@@ -21,8 +21,8 @@ QT_BEGIN_MOC_NAMESPACE
 QT_WARNING_PUSH
 QT_WARNING_DISABLE_DEPRECATED
 struct qt_meta_stringdata_TTS_t {
-    QByteArrayData data[7];
-    char stringdata0[74];
+    QByteArrayData data[6];
+    char stringdata0[67];
 };
 #define QT_MOC_LITERAL(idx, ofs, len) \
     Q_STATIC_BYTE_ARRAY_DATA_HEADER_INITIALIZER_WITH_OFFSET(len, \
@@ -34,13 +34,12 @@ static const qt_meta_stringdata_TTS_t qt_meta_stringdata_TTS = {
 QT_MOC_LITERAL(0, 0, 3), // "TTS"
 QT_MOC_LITERAL(1, 4, 12), // "ttsReadyData"
 QT_MOC_LITERAL(2, 17, 0), // ""
-QT_MOC_LITERAL(3, 18, 6), // "QFile&"
-QT_MOC_LITERAL(4, 25, 18), // "webSocketConnected"
-QT_MOC_LITERAL(5, 44, 21), // "onTextMessageReceived"
-QT_MOC_LITERAL(6, 66, 7) // "message"
+QT_MOC_LITERAL(3, 18, 18), // "webSocketConnected"
+QT_MOC_LITERAL(4, 37, 21), // "onTextMessageReceived"
+QT_MOC_LITERAL(5, 59, 7) // "message"
 
     },
-    "TTS\0ttsReadyData\0\0QFile&\0webSocketConnected\0"
+    "TTS\0ttsReadyData\0\0webSocketConnected\0"
     "onTextMessageReceived\0message"
 };
 #undef QT_MOC_LITERAL
@@ -62,15 +61,15 @@ static const uint qt_meta_data_TTS[] = {
        1,    1,   29,    2, 0x06 /* Public */,
 
  // slots: name, argc, parameters, tag, flags
-       4,    0,   32,    2, 0x08 /* Private */,
-       5,    1,   33,    2, 0x08 /* Private */,
+       3,    0,   32,    2, 0x08 /* Private */,
+       4,    1,   33,    2, 0x08 /* Private */,
 
  // signals: parameters
-    QMetaType::Void, 0x80000000 | 3,    2,
+    QMetaType::Void, QMetaType::QString,    2,
 
  // slots: parameters
     QMetaType::Void,
-    QMetaType::Void, QMetaType::QString,    6,
+    QMetaType::Void, QMetaType::QString,    5,
 
        0        // eod
 };
@@ -81,7 +80,7 @@ void TTS::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **
         auto *_t = static_cast<TTS *>(_o);
         Q_UNUSED(_t)
         switch (_id) {
-        case 0: _t->ttsReadyData((*reinterpret_cast< QFile(*)>(_a[1]))); break;
+        case 0: _t->ttsReadyData((*reinterpret_cast< QString(*)>(_a[1]))); break;
         case 1: _t->webSocketConnected(); break;
         case 2: _t->onTextMessageReceived((*reinterpret_cast< const QString(*)>(_a[1]))); break;
         default: ;
@@ -89,7 +88,7 @@ void TTS::qt_static_metacall(QObject *_o, QMetaObject::Call _c, int _id, void **
     } else if (_c == QMetaObject::IndexOfMethod) {
         int *result = reinterpret_cast<int *>(_a[0]);
         {
-            using _t = void (TTS::*)(QFile & );
+            using _t = void (TTS::*)(QString );
             if (*reinterpret_cast<_t *>(_a[1]) == static_cast<_t>(&TTS::ttsReadyData)) {
                 *result = 0;
                 return;
@@ -139,7 +138,7 @@ int TTS::qt_metacall(QMetaObject::Call _c, int _id, void **_a)
 }
 
 // SIGNAL 0
-void TTS::ttsReadyData(QFile & _t1)
+void TTS::ttsReadyData(QString _t1)
 {
     void *_a[] = { nullptr, const_cast<void*>(reinterpret_cast<const void*>(&_t1)) };
     QMetaObject::activate(this, &staticMetaObject, 0, _a);
