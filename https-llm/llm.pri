@@ -1,8 +1,8 @@
 QT       += network
 
 SOURCES += \
-    ../https-llm/llm.cpp
+    $$PWD/llm.cpp
 
 HEADERS += \
-    ../https-llm/llm.h
+    $$PWD/llm.h
 

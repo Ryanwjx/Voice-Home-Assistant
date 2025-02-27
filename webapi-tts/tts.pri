@@ -1,8 +1,8 @@
 QT       += network websockets
 
 SOURCES += \
-    ../webapi-tts/tts.cpp
+    $$PWD/tts.cpp
 
 HEADERS += \
-    ../webapi-tts/tts.h
+    $$PWD/tts.h
 

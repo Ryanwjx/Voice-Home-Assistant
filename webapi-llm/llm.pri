@@ -1,8 +1,8 @@
 QT       += network websockets
 
 SOURCES += \
-    ../webapi-llm/llm.cpp
+    $$PWD/llm.cpp
 
 HEADERS += \
-    ../webapi-llm/llm.h
+    $$PWD/llm.h
 

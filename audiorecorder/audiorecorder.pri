@@ -1,8 +1,8 @@
 QT       += multimedia
 
 SOURCES += \
-    ../audiorecorder/audiorecorder.cpp
+    $$PWD/audiorecorder.cpp
 
 HEADERS += \
-    ../audiorecorder/audiorecorder.h
+    $$PWD/audiorecorder.h
 
