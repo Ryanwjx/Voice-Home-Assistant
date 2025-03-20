@@ -70,7 +70,10 @@ void STT::abandonstt()
 
 void STT::webSocketConnected()
 {
-    qDebug() << "stt WebSocket connected!";
+    QDateTime dateTime= QDateTime::currentDateTime();//获取系统当前的时间
+    QString str = dateTime .toString("hh:mm:ss.zzz");
+
+    qDebug() << str <<'\t' << "stt WebSocket connected!";
 
     g_audioFile.setFileName(g_audioFileName);   //初始化 文件
     if (!g_audioFile.open(QIODevice::ReadOnly)) {
@@ -90,7 +93,10 @@ void STT::webSocketConnected()
 
 void STT::webSocketDisconnected()
 {
-    qDebug() << "stt WebSocket disconnected!";
+    QDateTime dateTime= QDateTime::currentDateTime();//获取系统当前的时间
+    QString str = dateTime .toString("hh:mm:ss.zzz");
+
+    qDebug() << str <<'\t' << "stt WebSocket disconnected!";
     g_audioFile.close();    //清理 关闭文件
 }
 

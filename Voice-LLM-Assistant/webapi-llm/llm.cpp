@@ -64,7 +64,10 @@ void LLM::abandonLLM()
 
 void LLM::webSocketConnected()
 {
-    qDebug() << "LLM WebSocket connected!";
+    QDateTime dateTime= QDateTime::currentDateTime();//获取系统当前的时间
+    QString str = dateTime .toString("hh:mm:ss.zzz");
+
+    qDebug() << str <<'\t' << "LLM WebSocket connected!";
 
     g_FullText.clear(); //初始化 接收信息
     
@@ -133,7 +136,10 @@ void LLM::webSocketError(QAbstractSocket::SocketError error) {
 
 void LLM::webSocketDisconnected()
 {
-    qDebug() << "LLM WebSocket disconnected!";
+    QDateTime dateTime= QDateTime::currentDateTime();//获取系统当前的时间
+    QString str = dateTime .toString("hh:mm:ss.zzz");
+
+    qDebug() << str <<'\t' << "LLM WebSocket disconnected!";
 }
 
 void LLM::onTextMessageReceived(const QString &ret_message)
@@ -172,6 +178,24 @@ void LLM::onTextMessageReceived(const QString &ret_message)
     int seq = choices["seq"].toInt();
     QJsonArray textArray = choices["text"].toArray();
     
+    // // 输出 text 中的内容
+    // for (int i = 0; i < textArray.size(); ++i) {
+    //     QJsonObject textObj = textArray[i].toObject();
+    //     QString content = textObj["content"].toString();
+    //     QString role = textObj["role"].toString();
+    //     int index = textObj["index"].toInt();
+
+    //     g_FullText += content;
+    // }
+
+    // if(status == STATUS_LAST_FRAME)
+    // {
+    //     qDebug() << "full text result: " << g_FullText;
+    //     emit LLMReadyData(g_FullText);
+
+    //     webSocket->close();
+    // }    
+
     // 输出 text 中的内容
     for (int i = 0; i < textArray.size(); ++i) {
         QJsonObject textObj = textArray[i].toObject();
@@ -179,16 +203,16 @@ void LLM::onTextMessageReceived(const QString &ret_message)
         QString role = textObj["role"].toString();
         int index = textObj["index"].toInt();
 
+        emit LLMReadyData(g_FullText);
+
         g_FullText += content;
     }
 
     if(status == STATUS_LAST_FRAME)
     {
         qDebug() << "full text result: " << g_FullText;
-        emit LLMReadyData(g_FullText);
-
         webSocket->close();
-    }    
+    }  
 }
 
 QUrl LLM::getURL()

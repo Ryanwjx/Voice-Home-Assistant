@@ -58,7 +58,10 @@ void TTS::abandonTTS()
 
 void TTS::webSocketConnected()
 {
-    qDebug() << "tts WebSocket connected!";
+    QDateTime dateTime= QDateTime::currentDateTime();//获取系统当前的时间
+    QString str = dateTime .toString("hh:mm:ss.zzz");
+
+    qDebug() << str <<'\t' << "tts WebSocket connected!";
 
     g_audioFile.open(QIODevice::Append);    //初始化 打开文件
     g_audioFile.resize(0);
@@ -96,7 +99,10 @@ void TTS::webSocketConnected()
 
 void TTS::webSocketDisconnected()
 {
-    qDebug() << "LLM WebSocket disconnected!";
+    QDateTime dateTime= QDateTime::currentDateTime();//获取系统当前的时间
+    QString str = dateTime .toString("hh:mm:ss.zzz");
+
+    qDebug() << str <<'\t' << "tts WebSocket disconnected!";
     g_audioFile.close();  //清理 关闭文件
 }
 
