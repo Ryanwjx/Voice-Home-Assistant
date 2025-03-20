@@ -10,6 +10,7 @@
 #include <QJsonArray>
 #include <QMessageAuthenticationCode>
 #include <QUrlQuery>
+#include <QVector>
 
 #define STATUS_FIRST_FRAME 0
 #define STATUS_CONTINUE_FRAME 1
@@ -79,7 +80,7 @@ void LLM::webSocketConnected()
     QJsonObject chat;
     chat["domain"] = "4.0Ultra";
     chat["temperature"] = 0.5;
-    chat["max_tokens"] = 128;
+    chat["max_tokens"] = 4096;
 
     QJsonObject parameter;
     parameter["chat"] = chat;
@@ -112,8 +113,8 @@ void LLM::webSocketConnected()
 }
 
 void LLM::webSocketError(QAbstractSocket::SocketError error) {
-        qDebug() << "WebSocket error occurred!";
-        qDebug() << "Error code:" << error;
+        qDebug() << "LLM WebSocket error occurred!";
+        qDebug() << "LLM Error code:" << error;
 
         // 你可以根据不同的错误代码来进行更详细的错误处理
         switch (error) {
@@ -203,14 +204,49 @@ void LLM::onTextMessageReceived(const QString &ret_message)
         QString role = textObj["role"].toString();
         int index = textObj["index"].toInt();
 
-        emit LLMReadyData(g_FullText);
-
-        g_FullText += content;
+        g_FullText += content;     
     }
 
+    int maxlen = 25;
+    if(g_FullText.size() >= maxlen) //大于maxlen的结果，
+    {
+        int lastPeriodIndex = g_FullText.lastIndexOf("。");
+        QString answer("");
+        if (lastPeriodIndex != -1)      //如果有。则提取句子。然后申请转换
+        {
+            answer = g_FullText.mid(0, lastPeriodIndex + 1);    //很奇怪，”。“好像是两个字符，但只+1少一半
+            g_FullText = g_FullText.mid(lastPeriodIndex + 1);   //很奇怪，”。“好像是两个字符，但+1多一半
+            emit LLMReadyData(answer);
+        }
+        else                        // 否则退而求其次找其余符号。然后申请转换
+        {
+            const QVector<QString> chinesePunctuation = {"？","，","：","；",".",",","!"};
+            int lastChineseSentenceIndex = -1;
+            for (int i = 0; i < chinesePunctuation.size(); ++i)
+            {
+                int tmpIndex = g_FullText.lastIndexOf(chinesePunctuation[i]);
+                lastChineseSentenceIndex = lastChineseSentenceIndex < tmpIndex ? tmpIndex : lastChineseSentenceIndex;
+            }
+            if (lastChineseSentenceIndex != -1)     //找到分段符号，则按照句子划分tts
+            {
+                answer = g_FullText.mid(0, lastChineseSentenceIndex + 1);
+                g_FullText = g_FullText.mid(lastChineseSentenceIndex + 1);
+                emit LLMReadyData(answer);
+            }
+            else
+            {
+                answer = g_FullText.mid(0, maxlen);  //否则按照max个字符
+                g_FullText = g_FullText.mid(maxlen + 1);
+                emit LLMReadyData(answer);
+            }
+        }
+    }
     if(status == STATUS_LAST_FRAME)
     {
-        qDebug() << "full text result: " << g_FullText;
+        // qDebug() << "full text result: " << g_FullText;
+        if(g_FullText.size() > 0){
+            emit LLMReadyData(g_FullText);
+        }
         webSocket->close();
     }  
 }

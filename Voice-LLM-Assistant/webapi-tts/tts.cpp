@@ -34,8 +34,6 @@ TTS::TTS(QObject *parent):g_audioFile(pathstr)
     APIKey = "46f6142d03d1912a246dd9b696a17cbf";
     APISecret = "ZGFlMzhmYjk2ZDczN2RkZWI4MjJlZGI5";
     // webSocket->sendTextMessage(cmd);
-
-    // startTTS("你好！");
 }
 
 TTS::~TTS()
@@ -44,11 +42,19 @@ TTS::~TTS()
     webSocket = nullptr;
 }
 
-void TTS::startTTS(QString text)
+void TTS::FillBufTTS(QString text)
+{
+    g_ttstext.enqueue(text);
+    startTTS();
+}
+
+void TTS::startTTS()
 {   
-    g_ttstext = text;   //初始化 设置输入
-    QUrl qurl = getURL();
-    webSocket->open(qurl);  //开始连接服务器
+    if(!g_audioprocessflag && g_ttstext.size() != 0)
+    {
+        QUrl qurl = getURL();
+        webSocket->open(qurl);  //开始连接服务器
+    }
 }
 
 void TTS::abandonTTS()
@@ -59,14 +65,16 @@ void TTS::abandonTTS()
 void TTS::webSocketConnected()
 {
     QDateTime dateTime= QDateTime::currentDateTime();//获取系统当前的时间
-    QString str = dateTime .toString("hh:mm:ss.zzz");
+    QString datestr = dateTime .toString("hh:mm:ss.zzz");
 
-    qDebug() << str <<'\t' << "tts WebSocket connected!";
+    qDebug() << datestr <<'\t' << "tts WebSocket connected!";
 
     g_audioFile.open(QIODevice::Append);    //初始化 打开文件
-    g_audioFile.resize(0);
 
-    qDebug() << g_ttstext;
+    g_audioprocessflag = true;      //初始化 设置启动tts标志
+
+    QString str = g_ttstext.dequeue();
+    qDebug() << str;
     // 组织 JSON 数据
     QJsonObject json;
 
@@ -80,7 +88,7 @@ void TTS::webSocketConnected()
     business["tte"] = "utf8";
 
     // 进行 Base64 编码
-    QByteArray buf = g_ttstext.toLocal8Bit();
+    QByteArray buf = str.toLocal8Bit();
     // QByteArray buf("这是语音");
     QString encodedAudio = QString::fromUtf8(buf.toBase64());
     QJsonObject data;
@@ -104,11 +112,16 @@ void TTS::webSocketDisconnected()
 
     qDebug() << str <<'\t' << "tts WebSocket disconnected!";
     g_audioFile.close();  //清理 关闭文件
+    g_audioprocessflag = false;      //清理 重置启动tts标志
+
+    startTTS(); //重启 
 }
 
 void TTS::onTextMessageReceived(const QString &message)
 {
-    qDebug() << "Received voice message ";
+    // qDebug() << "Received voice message ";
+
+    // while(1);
 
     QJsonDocument jsonDoc = QJsonDocument::fromJson(message.toUtf8());
     if (!jsonDoc.isObject()) {
@@ -135,6 +148,7 @@ void TTS::onTextMessageReceived(const QString &message)
 
     // 将音频数据追加写入文件
     g_audioFile.write(audioData);
+    // qDebug() << "追加后pos变换：" <<g_audioFile.pos();
 
     if(status == STATUS_LAST_FRAME)
     {
@@ -142,7 +156,6 @@ void TTS::onTextMessageReceived(const QString &message)
         emit ttsReadyData(pathstr);  
         webSocket->close(); 
     }
-    
 }
 
 QUrl TTS::getURL()
@@ -171,6 +184,6 @@ QUrl TTS::getURL()
     query.addQueryItem("host",host);
     qurl.setQuery(query);
 
-    qDebug() <<qurl.toString().toStdString().data();
+    // qDebug() <<qurl.toString().toStdString().data();
     return qurl;
 }

@@ -57,7 +57,7 @@ SOURCES       = main.cpp \
 		../audiorecorder/audiorecorder.cpp \
 		../webapi-stt/stt.cpp \
 		../webapi-tts/tts.cpp \
-		../webapi-llm/llm.cpp qrc_res.cpp \
+		../webapi-llm/llm.cpp qrc_res_VoiceLLMAssistant.cpp \
 		moc_Voice-LLM-Assistant.cpp \
 		moc_audiorecorder.cpp \
 		moc_stt.cpp \
@@ -69,7 +69,7 @@ OBJECTS       = main.o \
 		stt.o \
 		tts.o \
 		llm.o \
-		qrc_res.o \
+		qrc_res_VoiceLLMAssistant.o \
 		moc_Voice-LLM-Assistant.o \
 		moc_audiorecorder.o \
 		moc_stt.o \
@@ -459,7 +459,7 @@ Makefile: Voice-LLM-Assistant.pro /opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa
 		/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/lib/mkspecs/features/yacc.prf \
 		/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/lib/mkspecs/features/lex.prf \
 		Voice-LLM-Assistant.pro \
-		res.qrc
+		res_VoiceLLMAssistant.qrc
 	$(QMAKE) -o Makefile Voice-LLM-Assistant.pro
 /opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/lib/mkspecs/features/spec_pre.prf:
 /opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/lib/mkspecs/common/unix.conf:
@@ -643,7 +643,7 @@ Makefile: Voice-LLM-Assistant.pro /opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa
 /opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/lib/mkspecs/features/yacc.prf:
 /opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/lib/mkspecs/features/lex.prf:
 Voice-LLM-Assistant.pro:
-res.qrc:
+res_VoiceLLMAssistant.qrc:
 qmake: FORCE
 	@$(QMAKE) -o Makefile Voice-LLM-Assistant.pro
 
@@ -658,7 +658,7 @@ dist: distdir FORCE
 distdir: FORCE
 	@test -d $(DISTDIR) || mkdir -p $(DISTDIR)
 	$(COPY_FILE) --parents $(DIST) $(DISTDIR)/
-	$(COPY_FILE) --parents res.qrc $(DISTDIR)/
+	$(COPY_FILE) --parents res_VoiceLLMAssistant.qrc $(DISTDIR)/
 	$(COPY_FILE) --parents /opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/cortexa7hf-neon-poky-linux-gnueabi/usr/lib/mkspecs/features/data/dummy.cpp $(DISTDIR)/
 	$(COPY_FILE) --parents Voice-LLM-Assistant.h ../audiorecorder/audiorecorder.h ../webapi-stt/stt.h ../webapi-tts/tts.h ../webapi-llm/llm.h $(DISTDIR)/
 	$(COPY_FILE) --parents main.cpp Voice-LLM-Assistant.cpp ../audiorecorder/audiorecorder.cpp ../webapi-stt/stt.cpp ../webapi-tts/tts.cpp ../webapi-llm/llm.cpp $(DISTDIR)/
@@ -685,14 +685,14 @@ check: first
 
 benchmark: first
 
-compiler_rcc_make_all: qrc_res.cpp
+compiler_rcc_make_all: qrc_res_VoiceLLMAssistant.cpp
 compiler_rcc_clean:
-	-$(DEL_FILE) qrc_res.cpp
-qrc_res.cpp: res.qrc \
+	-$(DEL_FILE) qrc_res_VoiceLLMAssistant.cpp
+qrc_res_VoiceLLMAssistant.cpp: res_VoiceLLMAssistant.qrc \
 		/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/x86_64-pokysdk-linux/usr/bin/rcc \
 		audio/sound.wav \
 		gif/voice_effect.gif
-	/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/x86_64-pokysdk-linux/usr/bin/rcc -name res res.qrc -o qrc_res.cpp
+	/opt/fsl-imx-x11/4.1.15-2.1.0/sysroots/x86_64-pokysdk-linux/usr/bin/rcc -name res_VoiceLLMAssistant res_VoiceLLMAssistant.qrc -o qrc_res_VoiceLLMAssistant.cpp
 
 compiler_moc_predefs_make_all: moc_predefs.h
 compiler_moc_predefs_clean:
@@ -748,10 +748,18 @@ compiler_clean: compiler_rcc_clean compiler_moc_predefs_clean compiler_moc_heade
 
 ####### Compile
 
-main.o: main.cpp 
+main.o: main.cpp Voice-LLM-Assistant.h \
+		../audiorecorder/audiorecorder.h \
+		../webapi-stt/stt.h \
+		../webapi-tts/tts.h \
+		../webapi-llm/llm.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o main.o main.cpp
 
-Voice-LLM-Assistant.o: Voice-LLM-Assistant.cpp 
+Voice-LLM-Assistant.o: Voice-LLM-Assistant.cpp Voice-LLM-Assistant.h \
+		../audiorecorder/audiorecorder.h \
+		../webapi-stt/stt.h \
+		../webapi-tts/tts.h \
+		../webapi-llm/llm.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o Voice-LLM-Assistant.o Voice-LLM-Assistant.cpp
 
 audiorecorder.o: ../audiorecorder/audiorecorder.cpp ../audiorecorder/audiorecorder.h
@@ -766,8 +774,8 @@ tts.o: ../webapi-tts/tts.cpp ../webapi-tts/tts.h
 llm.o: ../webapi-llm/llm.cpp ../webapi-llm/llm.h
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o llm.o ../webapi-llm/llm.cpp
 
-qrc_res.o: qrc_res.cpp 
-	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o qrc_res.o qrc_res.cpp
+qrc_res_VoiceLLMAssistant.o: qrc_res_VoiceLLMAssistant.cpp 
+	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o qrc_res_VoiceLLMAssistant.o qrc_res_VoiceLLMAssistant.cpp
 
 moc_Voice-LLM-Assistant.o: moc_Voice-LLM-Assistant.cpp 
 	$(CXX) -c $(CXXFLAGS) $(INCPATH) -o moc_Voice-LLM-Assistant.o moc_Voice-LLM-Assistant.cpp

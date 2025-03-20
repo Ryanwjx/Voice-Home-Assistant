@@ -7,6 +7,7 @@
 #include <unistd.h>
 #include <QFile>
 #include <QTimer>
+#include <QQueue>
 
 class TTS : public QObject
 {
@@ -16,22 +17,23 @@ public:
     TTS(QObject *parent = nullptr);
     ~TTS();
 
-    void startTTS(QString text);
+    void FillBufTTS(QString text);
     void abandonTTS();
 private:
-    // WebSocket
     QWebSocket *webSocket;
-private:
+
     QString pathstr = "./demo.pcm";
 
     QFile g_audioFile;
-    QString g_ttstext;
+    QQueue<QString> g_ttstext;
+    bool g_audioprocessflag = false;
 
     QString APPID;
     QString APIKey;
     QString APISecret;
 
     QUrl getURL();
+    void startTTS();
 private slots:
 
     // WebSocket

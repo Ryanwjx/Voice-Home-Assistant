@@ -52,10 +52,11 @@ VoiceLLMAssistant::VoiceLLMAssistant(QWidget *parent)
     if (!info.isFormatSupported(fmt)) {
         qWarning() << "Raw audio format not supported by backend, cannot play audio.";
     }
+
     audio = new QAudioOutput(fmt, this);
     connect(audio, SIGNAL(stateChanged(QAudio::State)), this, SLOT(audiohandleStateChanged(QAudio::State)));
 
-    // onttsReadyData("./demo.pcm");
+    g_sourceFile = new QFile;
 }
 
 VoiceLLMAssistant::~VoiceLLMAssistant()
@@ -119,9 +120,21 @@ bool VoiceLLMAssistant::eventFilter(QObject *watched, QEvent *event){
             mystt->abandonstt();
             myllm->abandonLLM();
             mytts->abandonTTS();
-            if(audio->state() != QAudio::IdleState)
+            if(audio->state() != QAudio::StoppedState)
             {
                 audio->stop();
+            }
+
+            g_sourceFile->setFileName(pathstr);
+            if (g_sourceFile->open(QIODevice::WriteOnly | QIODevice::Truncate)) //没有则创建，有则清空
+            {
+                g_sourceFile->close();
+                g_sourceFile->open(QIODevice::ReadOnly); //设置为只读模式
+                g_audiostartflag = true;
+            }
+            else
+            {
+                qDebug() << "audio file create failed";
             }
 
             /* 等待QSound播放完,1.5s后再录音 */
@@ -182,36 +195,37 @@ void VoiceLLMAssistant::onllmReadyData(QString str)
     textLabel->setText("LLM回答结果是:\n" + str);
     textLabel->adjustSize();
 
-    mytts->startTTS(str);
+    mytts->FillBufTTS(str);
 }
 
 void VoiceLLMAssistant::onttsReadyData(QString filepath)
 {
-    if (filepath.isEmpty() || !QFile::exists(filepath)) {
-        qDebug() << "文件路径无效：" << filepath;
-        return;
+    if(g_audiostartflag)
+    {
+        audio->start(g_sourceFile);
+        g_audiostartflag = false;
     }
-
-    g_sourceFile.setFileName(filepath); 
-    g_sourceFile.open(QIODevice::ReadOnly);
-    audio->start(&g_sourceFile);
 }
 
 void VoiceLLMAssistant::audiohandleStateChanged(QAudio::State newState)
 {
     switch (newState) {
-        case QAudio::IdleState:
-            audio->stop();
+        case QAudio::IdleState:                     //append后就会进入IdleState，不可用于判断正常结束
             qDebug() << "audio over";
-            textLabel->setText("请点击，开始说话...");
+            // textLabel->setText("请点击，开始说话...");
             break;
-        
         case QAudio::StoppedState:
             // Stopped for other reasons
             if (audio->error() == QAudio::NoError) {
-                g_sourceFile.close();
                 qDebug() << "audio stop";
             }
+            else
+            {
+                qDebug() << "audio error stop";
+            }
+            break;
+        case QAudio::ActiveState:
+            // qDebug() << "播放    后pos变换：" <<g_sourceFile->pos();
             break;
         default:
             break;

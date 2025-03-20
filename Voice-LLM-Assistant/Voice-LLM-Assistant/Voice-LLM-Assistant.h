@@ -66,7 +66,9 @@ private:
     AudioRecorder *myAudioRecorder;
 
     /* 播放类 */
-    QFile g_sourceFile;   // class member.
+    QFile *g_sourceFile;   // class member.
+    QString pathstr = "./demo.pcm";
+    bool g_audiostartflag = false;
     QAudioOutput* audio; // class member.
 
 private slots:
