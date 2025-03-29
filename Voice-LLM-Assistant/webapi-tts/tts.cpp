@@ -30,9 +30,9 @@ TTS::TTS(QObject *parent):g_audioFile(pathstr)
     connect(webSocket, SIGNAL(disconnected()), this, SLOT(webSocketDisconnected()));
     connect(webSocket, SIGNAL(textMessageReceived(QString)), this, SLOT(onTextMessageReceived(QString)));
 
-    APPID = "165f0835";
-    APIKey = "46f6142d03d1912a246dd9b696a17cbf";
-    APISecret = "ZGFlMzhmYjk2ZDczN2RkZWI4MjJlZGI5";
+    APPID = "xxx";
+    APIKey = "xxx";
+    APISecret = "xxx";
     // webSocket->sendTextMessage(cmd);
 }
 
