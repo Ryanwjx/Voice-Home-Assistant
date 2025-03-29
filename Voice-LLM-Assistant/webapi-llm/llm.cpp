@@ -35,9 +35,9 @@ LLM::LLM(QObject *parent)
             this, SLOT(webSocketDisconnected()));
     connect(webSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(webSocketError(QAbstractSocket::SocketError)));
 
-    APPID = "165f0835";
-    APIKey = "46f6142d03d1912a246dd9b696a17cbf";
-    APISecret = "ZGFlMzhmYjk2ZDczN2RkZWI4MjJlZGI5";
+    APPID = "xxx";
+    APIKey = "xxx";
+    APISecret = "xxx";
 
     // startLLM("现在几点了");
 }
