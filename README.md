@@ -9,5 +9,5 @@ A panel for Home appliance control.
 
 # 2. Usage 
 This project is based on QT on linux.
-![image](./git%20img/llm.jpg)
-![image](./git%20img/mqtt.jpg)
+<img src="./git%20img/llm.jpg" width="400">
+<img src="./git%20img/mqtt.jpg" width="400">
